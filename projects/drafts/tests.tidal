@@ -1,0 +1,9 @@
+setcps(100/60/4)
+
+-- midi clock stuff
+clkst
+
+clksp
+--
+
+

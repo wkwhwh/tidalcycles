@@ -7,7 +7,7 @@ import Control.Concurrent (threadDelay)
 
 hSetEncoding stdout utf8
 
-tidal <- startTidal (superdirtTarget {oLatency = 0.05, oAddress = "127.0.0.1", oPort = 57120}) (defaultConfig {cVerbose = True, cFrameTimespan = 1/20})
+tidal <- startTidal (superdirtTarget {oLatency = 0.05, oAddress = "127.0.0.1", oPort = 57120}) (defaultConfig {cVerbose = True, cFrameTimespan = 1/20 })
 
 :{
 let only = (hush >>)
@@ -57,6 +57,14 @@ let only = (hush >>)
     d6 = p 6 . (|< orbit 5)
     d7 = p 7 . (|< orbit 6)
     d8 = p 8 . (|< orbit 7)
+    d9 = p 9 . (|< orbit 8)
+    d10 = p 10 . (|< orbit 9)
+    d11 = p 11 . (|< orbit 10)
+    d12 = p 12 . (|< orbit 11)
+    d13 = p 13
+    d14 = p 14
+    d15 = p 15
+    d16 = p 16
 :}
 
 :{
@@ -71,18 +79,41 @@ let getState = streamGet tidal
 -- my config
 :{
 -- synths
-let mc = midichan
-    m p = s "tidal" # mc (p - 1) 
+let midiPatterns = inhabit [
+      ("st1", midichan 0 # s "st"), 
+      ("st2", midichan 1 # s "st"), 
+      ("st3", midichan 2 # s "st"), 
+      ("st4", midichan 3 # s "st"), 
+      ("st5", midichan 4 # s "st"), 
+      ("st6", midichan 5 # s "st"), 
+      ("st7", midichan 6 # s "st"), 
+      ("st8", midichan 7 # s "st"), 
+      ("st9", midichan 8 # s "st"), 
+      ("st10", midichan 9 # s "st"), 
+      ("st11", midichan 10 # s "st"), 
+      ("st12", midichan 11 # s "st"), 
+      ("dn1", midichan 0 # s "dn"), 
+      ("dn2", midichan 1 # s "dn"), 
+      ("dn3", midichan 2 # s "dn"), 
+      ("dn4", midichan 3 # s "dn"), 
+      ("pk", midichan 0 # s "pk")
+      ]
+
+    m patternName = midiPatterns patternName
 
 -- clock
     clkst = do
-      p "midictl" $ midicmd "start/4" # s "tidal"
+      p "midictl" $ midicmd "start/4" # stack [s "tidal", s "st", s "dn", s "pk"]
       threadDelay 8000000
       p "midictl" $ silence
-    clksp = once $ midicmd "stop" # s "tidal"
+    clksp = do
+      once $ midicmd "stop" # stack [s "tidal", s "st", s "dn", s "pk"]
     setcps c = do
       asap $ cps c
-      p "midiclock" $ midicmd "midiClock*96" # s "tidal"
+      p "midiclock" $ midicmd "midiClock*96" # stack [s "tidal", s "st", s "dn", s "pk"]
+
+-- utils
+    hush = mapM_ ($ silence) [d1,d2,d3,d4,d5,d6,d7,d8,d9,d10,d11,d12,d13,d14,d15,d16]
 :}
 
 
